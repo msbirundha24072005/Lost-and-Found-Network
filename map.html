@@ -1,0 +1,531 @@
+{% extends "base.html" %}
+
+{% block title %}QR Metro Map{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+    
+    .map-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .map-header h1 {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .map-header p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+    
+    /* Metro Map Styles */
+    .metro-map {
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        border-radius: 30px;
+        padding: 3rem 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
+    }
+    
+    .metro-map::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L60,60 M60,0 L0,60" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></svg>');
+        opacity: 0.2;
+    }
+    
+    .map-content {
+        position: relative;
+        z-index: 2;
+        min-height: 500px;
+    }
+    
+    /* Metro Lines */
+    .metro-line {
+        position: absolute;
+        height: 6px;
+        border-radius: 3px;
+        z-index: 1;
+    }
+    
+    .line-blue {
+        background: linear-gradient(90deg, #3498db, #2980b9);
+        top: 30%;
+        left: 5%;
+        right: 5%;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+    }
+    
+    .line-red {
+        background: linear-gradient(90deg, #e74c3c, #c0392b);
+        top: 50%;
+        left: 8%;
+        right: 8%;
+        box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+    }
+    
+    .line-green {
+        background: linear-gradient(90deg, #2ecc71, #27ae60);
+        bottom: 30%;
+        left: 10%;
+        right: 10%;
+        transform: rotate(-2deg);
+        box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+    }
+    
+    /* Stations */
+    .station {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+    
+    .station-dot {
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        position: relative;
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3),
+                    0 0 20px rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    .station-dot::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px;
+        height: 8px;
+        background: var(--primary);
+        border-radius: 50%;
+    }
+    
+    .station:hover .station-dot {
+        transform: scale(1.3);
+        box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.4),
+                    0 0 30px rgba(255, 255, 255, 0.7);
+    }
+    
+    .station-label {
+        position: absolute;
+        top: 35px;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .station:hover .station-label {
+        opacity: 1;
+        visibility: visible;
+        top: 40px;
+    }
+    
+    /* Station positions */
+    .station-1 { top: 30%; left: 15%; }
+    .station-2 { top: 30%; left: 35%; }
+    .station-3 { top: 30%; left: 55%; }
+    .station-4 { top: 30%; left: 75%; }
+    .station-5 { top: 30%; left: 90%; }
+    
+    .station-6 { top: 50%; left: 20%; }
+    .station-7 { top: 50%; left: 40%; }
+    .station-8 { top: 50%; left: 60%; }
+    .station-9 { top: 50%; left: 80%; }
+    
+    .station-10 { bottom: 30%; left: 25%; }
+    .station-11 { bottom: 30%; left: 45%; }
+    .station-12 { bottom: 30%; left: 65%; }
+    .station-13 { bottom: 30%; left: 85%; }
+    
+    /* Vehicle icons */
+    .vehicle-icon {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--accent);
+        color: var(--primary);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 11;
+    }
+    
+    /* QR Popup */
+    .qr-popup {
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%) scale(0.9);
+        background: var(--bg-secondary);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 100;
+        min-width: 250px;
+        text-align: center;
+        border: 2px solid var(--primary);
+    }
+    
+    .station.active .qr-popup {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) scale(1);
+        bottom: 60px;
+    }
+    
+    .qr-popup img {
+        width: 180px;
+        height: 180px;
+        border-radius: 10px;
+        margin: 1rem 0;
+        padding: 0.5rem;
+        background: white;
+    }
+    
+    .qr-popup h3 {
+        color: var(--primary);
+        margin-bottom: 0.3rem;
+    }
+    
+    .qr-popup p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .scan-link {
+        display: inline-block;
+        background: var(--primary);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 500;
+        margin-top: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .scan-link:hover {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(26, 35, 126, 0.3);
+    }
+    
+    /* Legend */
+    .map-legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary);
+        border-radius: 30px;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+    
+    .legend-blue { background: #3498db; }
+    .legend-red { background: #e74c3c; }
+    .legend-green { background: #2ecc71; }
+    
+    /* QR Grid View */
+    .qr-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+    }
+    
+    .qr-card {
+        background: var(--bg-secondary);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+    
+    .qr-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+    
+    .qr-card img {
+        width: 150px;
+        height: 150px;
+        margin: 1rem auto;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 10px;
+    }
+    
+    .vehicle-badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .badge-bus { background: #3498db; color: white; }
+    .badge-train { background: #e74c3c; color: white; }
+    .badge-metro { background: #2ecc71; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-container fade-in">
+    <div class="map-header">
+        <h1><i class="fas fa-map-marked-alt"></i> Transport Network QR Map</h1>
+        <p>Click on any station to view QR code and report lost/found items</p>
+    </div>
+    
+    <!-- Interactive Metro Map -->
+    <div class="metro-map">
+        <div class="map-content">
+            <!-- Metro Lines -->
+            <div class="metro-line line-blue"></div>
+            <div class="metro-line line-red"></div>
+            <div class="metro-line line-green"></div>
+            
+            <!-- Stations - Blue Line (Bus) -->
+            <div class="station station-1" data-vehicle="BUS001" onclick="showQR(this, 'BUS001')">
+                <div class="station-dot"></div>
+                <div class="vehicle-icon"><i class="fas fa-bus"></i></div>
+                <div class="station-label">Central Station</div>
+                <div class="qr-popup" id="popup-BUS001">
+                    <div class="loading">Loading QR...</div>
+                </div>
+            </div>
+            
+            <div class="station station-2" data-vehicle="BUS002" onclick="showQR(this, 'BUS002')">
+                <div class="station-dot"></div>
+                <div class="vehicle-icon"><i class="fas fa-bus"></i></div>
+                <div class="station-label">City Center</div>
+                <div class="qr-popup" id="popup-BUS002">
+                    <div class="loading">Loading QR...</div>
+                </div>
+            </div>
+            
+            <div class="station station-3" data-vehicle="BUS003" onclick="showQR(this, 'BUS003')">
+                <div class="station-dot"></div>
+                <div class="vehicle-icon"><i class="fas fa-bus"></i></div>
+                <div class="station-label">Airport</div>
+                <div class="qr-popup" id="popup-BUS003">
+                    <div class="loading">Loading QR...</div>
+                </div>
+            </div>
+            
+            <!-- Stations - Red Line (Train) -->
+            <div class="station station-6" data-vehicle="TRAIN001" onclick="showQR(this, 'TRAIN001')">
+                <div class="station-dot"></div>
+                <div class="vehicle-icon"><i class="fas fa-train"></i></div>
+                <div class="station-label">Railway Station</div>
+                <div class="qr-popup" id="popup-TRAIN001">
+                    <div class="loading">Loading QR...</div>
+                </div>
+            </div>
+            
+            <div class="station station-7" data-vehicle="TRAIN002" onclick="showQR(this, 'TRAIN002')">
+                <div class="station-dot"></div>
+                <div class="vehicle-icon"><i class="fas fa-train"></i></div>
+                <div class="station-label">Junction</div>
+                <div class="qr-popup" id="popup-TRAIN002">
+                    <div class="loading">Loading QR...</div>
+                </div>
+            </div>
+            
+            <!-- Stations - Green Line (Metro) -->
+            <div class="station station-10" data-vehicle="METRO001" onclick="showQR(this, 'METRO001')">
+                <div class="station-dot"></div>
+                <div class="vehicle-icon"><i class="fas fa-subway"></i></div>
+                <div class="station-label">Metro Central</div>
+                <div class="qr-popup" id="popup-METRO001">
+                    <div class="loading">Loading QR...</div>
+                </div>
+            </div>
+            
+            <div class="station station-11" data-vehicle="METRO002" onclick="showQR(this, 'METRO002')">
+                <div class="station-dot"></div>
+                <div class="vehicle-icon"><i class="fas fa-subway"></i></div>
+                <div class="station-label">Metro North</div>
+                <div class="qr-popup" id="popup-METRO002">
+                    <div class="loading">Loading QR...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Legend -->
+    <div class="map-legend">
+        <div class="legend-item">
+            <div class="legend-color legend-blue"></div>
+            <span><i class="fas fa-bus"></i> Bus Routes</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color legend-red"></div>
+            <span><i class="fas fa-train"></i> Train Lines</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color legend-green"></div>
+            <span><i class="fas fa-subway"></i> Metro Network</span>
+        </div>
+    </div>
+    
+    <!-- QR Code Grid View -->
+    <h2 style="margin: 3rem 0 1.5rem; text-align: center;">
+        <i class="fas fa-qrcode" style="color: var(--primary);"></i>
+        All Vehicle QR Codes
+    </h2>
+    
+    <div class="qr-grid" id="qrGrid">
+        <div class="loading">Loading QR codes...</div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://127.0.0.1:5000/api';
+    let activeStation = null;
+    
+    // Show QR popup for station
+    async function showQR(stationElement, vehicleId) {
+        // Remove active class from all stations
+        document.querySelectorAll('.station').forEach(s => {
+            s.classList.remove('active');
+        });
+        
+        // Add active class to clicked station
+        stationElement.classList.add('active');
+        activeStation = stationElement;
+        
+        // Load QR code
+        const popup = stationElement.querySelector('.qr-popup');
+        popup.innerHTML = '<div class="loading">Loading QR...</div>';
+        
+        try {
+            const response = await fetch(`${API_URL}/vehicle/${vehicleId}/qr`);
+            const vehicle = await response.json();
+            
+            const icon = vehicle.type === 'bus' ? 'fa-bus' :
+                        vehicle.type === 'train' ? 'fa-train' : 'fa-subway';
+            
+            popup.innerHTML = `
+                <i class="fas ${icon}" style="font-size: 2rem; color: var(--primary);"></i>
+                <h3>${vehicle.vehicle_id}</h3>
+                <p>${vehicle.type} • ${vehicle.route}</p>
+                <img src="${vehicle.qr_image}" alt="QR Code">
+                <a href="${vehicle.scan_url}" target="_blank" class="scan-link">
+                    <i class="fas fa-camera"></i> Scan Now
+                </a>
+            `;
+        } catch (error) {
+            popup.innerHTML = '<div style="color: var(--danger);">Failed to load QR</div>';
+        }
+    }
+    
+    // Load all QR codes for grid view
+    async function loadAllQRs() {
+        const vehicles = ['BUS001', 'BUS002', 'BUS003', 'TRAIN001', 'TRAIN002', 'METRO001', 'METRO002'];
+        const grid = document.getElementById('qrGrid');
+        
+        let html = '';
+        
+        for (const vehicleId of vehicles) {
+            try {
+                const response = await fetch(`${API_URL}/vehicle/${vehicleId}/qr`);
+                const vehicle = await response.json();
+                
+                const badgeClass = vehicle.type === 'bus' ? 'badge-bus' :
+                                  vehicle.type === 'train' ? 'badge-train' : 'badge-metro';
+                const icon = vehicle.type === 'bus' ? 'fa-bus' :
+                            vehicle.type === 'train' ? 'fa-train' : 'fa-subway';
+                
+                html += `
+                    <div class="qr-card">
+                        <span class="vehicle-badge ${badgeClass}">
+                            <i class="fas ${icon}"></i> ${vehicle.type.toUpperCase()}
+                        </span>
+                        <h3>${vehicle.vehicle_id}</h3>
+                        <p>${vehicle.route}</p>
+                        <img src="${vehicle.qr_image}" alt="QR Code">
+                        <a href="${vehicle.scan_url}" target="_blank" class="btn btn-primary" style="margin-top: 0.5rem;">
+                            <i class="fas fa-camera"></i> Scan
+                        </a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error(`Error loading ${vehicleId}:`, error);
+            }
+        }
+        
+        grid.innerHTML = html || '<p>Failed to load QR codes</p>';
+    }
+    
+    // Close popup when clicking outside
+    document.addEventListener('click', (e) => {
+        if (activeStation && !activeStation.contains(e.target)) {
+            activeStation.classList.remove('active');
+            activeStation = null;
+        }
+    });
+    
+    // Load all QR codes on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAllQRs();
+        
+        // Load first station QR
+        setTimeout(() => {
+            const firstStation = document.querySelector('.station-1');
+            if (firstStation) showQR(firstStation, 'BUS001');
+        }, 1000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TransitTrace{% endblock %} - Lost & Found</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* ===== WARM & FRESH THEME ===== */
+        :root {
+            /* Light Mode */
+            --bg-primary: #fff8f0;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #fae9d8;
+            --text-primary: #4a3b2c;
+            --text-secondary: #6b5a4a;
+            --text-muted: #9b8b7a;
+            --primary: #c17b4c;
+            --primary-light: #e09d6e;
+            --primary-dark: #9e5f32;
+            --accent: #2f5c4a;
+            --success: #5f8b6f;
+            --warning: #e6b856;
+            --danger: #c65d4b;
+            --info: #6f9c9c;
+            --border-color: #f0e2d2;
+            --card-shadow: 0 10px 30px -10px rgba(159, 95, 50, 0.1);
+            --card-shadow-hover: 0 20px 40px -12px rgba(159, 95, 50, 0.15);
+            --navbar-bg: #ffffff;
+            --navbar-text: #4a3b2c;
+        }
+        
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --bg-primary: #2a241e;
+            --bg-secondary: #3a322a;
+            --bg-tertiary: #4a4036;
+            --text-primary: #f2e5d5;
+            --text-secondary: #d4c5b2;
+            --text-muted: #a5927d;
+            --primary: #e09d6e;
+            --primary-light: #f0bc95;
+            --primary-dark: #c17b4c;
+            --accent: #7fad96;
+            --success: #7fad96;
+            --warning: #f0cf8a;
+            --danger: #e68a7a;
+            --info: #9fc9c9;
+            --border-color: #5a4e42;
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+            --card-shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+            --navbar-bg: #3a322a;
+            --navbar-text: #f2e5d5;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.2s ease;
+        }
+        
+        /* ===== COLORED NAVBAR BUTTONS ===== */
+        .navbar {
+            background: var(--navbar-bg);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            background: var(--bg-tertiary);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .logo:hover {
+            background: var(--primary);
+        }
+        
+        .logo:hover i,
+        .logo:hover h1,
+        .logo:hover span {
+            color: white;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            transition: color 0.3s ease;
+        }
+        
+        .logo h1 {
+            color: var(--navbar-text);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+        
+        .logo span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: 4px;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .nav-link i {
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        /* Home button - Purple gradient */
+        .nav-link:first-child {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-link:first-child i {
+            color: white;
+        }
+        
+        .nav-link:first-child:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Admin button - Pink/Orange gradient */
+        .nav-link:last-child {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+        }
+        
+        .nav-link:last-child i {
+            color: white;
+        }
+        
+        .nav-link:last-child:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+        }
+        
+        .nav-link.active {
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: none;
+            color: var(--text-primary);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            margin-left: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .theme-toggle:hover {
+            background: var(--primary);
+            color: white;
+            transform: rotate(30deg);
+        }
+        
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 30px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(193, 123, 76, 0.3);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* ===== FORMS ===== */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 0.4rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(193, 123, 76, 0.1);
+        }
+        
+        /* ===== BADGES ===== */
+        .badge {
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .badge-success {
+            background: rgba(95, 139, 111, 0.15);
+            color: var(--success);
+        }
+        
+        .badge-warning {
+            background: rgba(230, 184, 86, 0.15);
+            color: var(--warning);
+        }
+        
+        .badge-danger {
+            background: rgba(198, 93, 75, 0.15);
+            color: var(--danger);
+        }
+        
+        .badge-info {
+            background: rgba(111, 156, 156, 0.15);
+            color: var(--info);
+        }
+        
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--bg-secondary);
+            padding: 3rem 2rem 1.5rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.4rem 0;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .nav-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            
+            .logo span {
+                display: none;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar with Colored Buttons -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fas fa-train"></i>
+                <div>
+                    <h1>TransitTrace</h1>
+                    <span>lost & found</span>
+                </div>
+            </a>
+            
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="fas fa-home"></i> 
+                    <span>Home</span>
+                </a>
+                <a href="/admin" class="nav-link {% if request.path == '/admin' %}active{% endif %}">
+                    <i class="fas fa-shield-alt"></i> 
+                    <span>Admin</span>
+                </a>
+            </div>
+            
+            <div class="user-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div>
+                <i class="fas fa-train" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <h3 style="margin: 0.5rem 0;">TransitTrace</h3>
+                <p style="color: var(--text-muted);">Decentralized Lost & Found Network</p>
+            </div>
+            <div class="footer-links">
+                <a href="#"><i class="fas fa-shield"></i> Privacy</a>
+                <a href="#"><i class="fas fa-file"></i> Terms</a>
+                <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+            </div>
+            <div>
+                <span class="badge badge-info">Blockchain</span>
+                <span class="badge badge-success" style="margin-left: 0.3rem;">QR</span>
+                <span class="badge badge-warning" style="margin-left: 0.3rem;">AI</span>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 TransitTrace. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.getElementById('theme-icon');
+            icon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+        });
+        
+    </script>
+    
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

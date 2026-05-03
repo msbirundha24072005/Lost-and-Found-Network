@@ -1,0 +1,935 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== HERO SECTION - BOLD & MODERN ===== */
+    .hero {
+        background: linear-gradient(135deg, #2aadc4 100%);
+        color: white;
+        padding: 4rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></svg>');
+        background-size: 50px;
+        opacity: 0.3;
+    }
+    
+    .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero h2 {
+        font-size: 3rem;
+        color: white;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .hero p {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    /* ===== STATS CARDS - MODERN GLASS MORPHISM ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        max-width: 800px;
+        margin: -3rem auto 3rem;
+        padding: 0 2rem;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem 1rem;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .stat-card i {
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0.5rem 0;
+    }
+    
+    .stat-card p {
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* ===== MAIN CONTENT LAYOUT ===== */
+    .main-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    @media (max-width: 968px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* ===== REPORT FORM - MODERN CARD ===== */
+    .form-card {
+        background: white;
+        border-radius: 30px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+    }
+    
+    .form-card h2 {
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .form-card h2 i {
+        color: #667eea;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    
+    .form-group label i {
+        color: #667eea;
+        width: 20px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.8rem 1.2rem;
+        border: 2px solid #eef2f6;
+        border-radius: 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #fafbfc;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-clear {
+        background: #f1f5f9;
+        color: #64748b;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .btn-clear:hover {
+        background: #e2e8f0;
+        color: #334155;
+    }
+    
+    /* ===== REPORTS SECTION - MODERN LIST ===== */
+    .reports-section {
+        background: white;
+        border-radius: 30px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        height: fit-content;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .section-header h2 {
+        font-size: 1.5rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .section-header h2 i {
+        color: #667eea;
+    }
+    
+    .btn-refresh {
+        background: #f1f5f9;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-refresh:hover {
+        background: #e2e8f0;
+        color: #334155;
+    }
+    
+    .reports-container {
+        max-height: 500px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+    
+    .reports-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .reports-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    
+    .reports-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    
+    .report-card {
+        background: #f8fafc;
+        border-radius: 20px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid;
+        transition: all 0.3s ease;
+    }
+    
+    .report-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .report-card.lost {
+        border-left-color: #ef4444;
+    }
+    
+    .report-card.found {
+        border-left-color: #10b981;
+    }
+    
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #1e293b;
+    }
+    
+    .report-badge {
+        padding: 0.2rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .badge-lost {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+    
+    .badge-found {
+        background: #dcfce7;
+        color: #10b981;
+    }
+    
+    .report-desc {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0.5rem 0;
+        line-height: 1.5;
+    }
+    
+    .report-meta {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.8rem;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        flex-wrap: wrap;
+    }
+    
+    .report-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .report-meta i {
+        font-size: 0.7rem;
+    }
+    
+    /* ===== MATCHES SECTION ===== */
+    .matches-section {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 30px;
+        padding: 2rem;
+        margin-top: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .match-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .match-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .match-score {
+        background: #667eea;
+        color: white;
+        padding: 0.2rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .match-items {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .match-item {
+        padding: 1rem;
+        border-radius: 15px;
+        border-top: 3px solid;
+    }
+    
+    .match-item.lost-item {
+        background: #fef2f2;
+        border-top-color: #ef4444;
+    }
+    
+    .match-item.found-item {
+        background: #f0fdf4;
+        border-top-color: #10b981;
+    }
+    
+    /* ===== BLOCKCHAIN SECTION ===== */
+    .blockchain-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 30px;
+        padding: 2rem;
+        color: white;
+        margin-top: 3rem;
+    }
+    
+    .blockchain-info {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .blockchain-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    
+    .blockchain-stat {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255,255,255,0.05);
+        border-radius: 15px;
+    }
+    
+    .blockchain-stat h4 {
+        font-size: 1.8rem;
+        margin-bottom: 0.3rem;
+        color: #fff;
+    }
+    
+    .blockchain-stat p {
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+    
+    .btn-view-chain {
+        background: white;
+        color: #0f172a;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+    
+    .btn-view-chain:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(255,255,255,0.2);
+    }
+    
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .btn-action {
+        flex: 1;
+        padding: 0.8rem;
+        border: none;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-action.find {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-action.find:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-action.blockchain {
+        background: #8b5cf6;
+        color: white;
+    }
+    
+    .btn-action.blockchain:hover {
+        background: #7c3aed;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+    }
+    
+    /* ===== LOADING STATES ===== */
+    .loading {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+        font-style: italic;
+    }
+    
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .hero h2 {
+            font-size: 2rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            margin-top: -2rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .match-items {
+            grid-template-columns: 1fr;
+        }
+        
+        .blockchain-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section - BOLD & MODERN -->
+<section class="hero">
+    <div class="hero-content">
+        <h2>Lost Something? We'll Help You Find It! 🔍</h2>
+<p>A decentralized platform to report, match, and return lost items securely.</p>
+    </div>
+</section>
+
+<!-- Stats Cards - Glass Morphism -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <i class="fas fa-clipboard-list"></i>
+        <h3 id="totalReports">6</h3>
+        <p>Total Reports</p>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-handshake"></i>
+        <h3 id="totalMatches">2</h3>
+        <p>Matches Found</p>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-shield-alt"></i>
+        <h3 id="recoveryRate">33%</h3>
+        <p>Recovery Rate</p>
+    </div>
+</div>
+
+<div class="main-container">
+    <!-- Main Grid - Report Form & Reports -->
+    <div class="content-grid">
+        <!-- LEFT: Report Form -->
+        <div class="form-card">
+            <h2>
+                <i class="fas fa-pen"></i>
+                Report Lost/Found Item
+            </h2>
+            
+            <form id="reportForm">
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Report Type</label>
+                    <select id="type" class="form-control" required>
+                        <option value="">Select type</option>
+                        <option value="lost">🔴 Lost Item</option>
+                        <option value="found">🟢 Found Item</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-box"></i> Item Name</label>
+                    <input type="text" id="item_name" class="form-control" required 
+                           placeholder="e.g., iPhone, Wallet, Bag">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Description</label>
+                    <textarea id="description" class="form-control" rows="3" required 
+                              placeholder="Color, brand, special features..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Location</label>
+                    <input type="text" id="location" class="form-control" required 
+                           placeholder="e.g., Central Station, Bus No. 101">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-bus"></i> Vehicle ID (Optional)</label>
+                    <input type="text" id="vehicle_id" class="form-control" 
+                           placeholder="e.g., BUS001">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Contact Info (Optional)</label>
+                    <input type="text" id="contact_info" class="form-control" 
+                           placeholder="Email or phone for updates">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-link"></i> Submit to Blockchain
+                    </button>
+                    <button type="reset" class="btn-clear">
+                        <i class="fas fa-undo"></i> Clear
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- RIGHT: Recent Reports -->
+        <div class="reports-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-history"></i>
+                    Recent Reports
+                </h2>
+                <button onclick="loadReports()" class="btn-refresh">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            
+            <div class="reports-container" id="reportsContainer">
+                <div class="loading">Loading reports...</div>
+            </div>
+            
+            <div class="action-buttons">
+                <button onclick="findMatches()" class="btn-action find">
+                    <i class="fas fa-search"></i> Find Matches
+                </button>
+                <button onclick="loadBlockchainInfo()" class="btn-action blockchain">
+                    <i class="fas fa-link"></i> Check Blockchain
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matches Section -->
+    <div class="matches-section">
+        <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-handshake" style="color: #667eea;"></i>
+            Potential Matches
+        </h2>
+        <div id="matchesContainer">
+            <div class="loading">Click "Find Matches" to discover potential matches</div>
+        </div>
+    </div>
+
+    <!-- Blockchain Section - Dark & Modern -->
+    <div class="blockchain-card">
+        <h2 style="color: white; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-link"></i>
+            Blockchain Verification
+        </h2>
+        <p style="opacity: 0.9;">All reports are immutably stored on our decentralized blockchain ledger</p>
+        
+        <div class="blockchain-info" id="blockchainInfo">
+            <div class="loading">Loading blockchain data...</div>
+        </div>
+        
+        <div class="blockchain-stats">
+            <div class="blockchain-stat">
+                <h4 id="blockCount">-</h4>
+                <p>Blocks</p>
+            </div>
+            <div class="blockchain-stat">
+                <h4 id="chainStatus">-</h4>
+                <p>Status</p>
+            </div>
+            <div class="blockchain-stat">
+                <h4 id="latestBlock">-</h4>
+                <p>Latest</p>
+            </div>
+        </div>
+        
+        <button class="btn-view-chain" onclick="toggleBlockchainDetails()">
+            <i class="fas fa-code"></i> View Full Blockchain
+        </button>
+        <div id="blockchainDetails" style="display: none; margin-top: 1rem;"></div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api';
+    
+    // Form submission
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const reportData = {
+            type: document.getElementById('type').value,
+            item_name: document.getElementById('item_name').value,
+            description: document.getElementById('description').value,
+            location: document.getElementById('location').value,
+            vehicle_id: document.getElementById('vehicle_id').value,
+            contact_info: document.getElementById('contact_info').value
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}/blockchain/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reportData)
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                showNotification('✅ Report submitted to blockchain!', 'success');
+                document.getElementById('reportForm').reset();
+                loadReports();
+                loadBlockchainInfo();
+                updateStats();
+            } else {
+                showNotification('Error: ' + result.error, 'error');
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+        }
+    });
+    
+    // Load reports
+    async function loadReports() {
+        try {
+            const response = await fetch(`${API_URL}/reports`);
+            const reports = await response.json();
+            
+            const container = document.getElementById('reportsContainer');
+            
+            if (reports.length === 0) {
+                container.innerHTML = '<div class="no-data">No reports yet</div>';
+                return;
+            }
+            
+            let html = '';
+            reports.slice(0, 10).forEach(report => {
+                html += `
+                    <div class="report-card ${report.type}">
+                        <div class="report-header">
+                            <span class="report-title">${report.item_name}</span>
+                            <span class="report-badge ${report.type === 'lost' ? 'badge-lost' : 'badge-found'}">
+                                ${report.type.toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="report-desc">${report.description}</div>
+                        <div class="report-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> ${report.location}</span>
+                            <span><i class="fas fa-bus"></i> ${report.vehicle_id || 'N/A'}</span>
+                            <span><i class="fas fa-clock"></i> ${report.timestamp}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            updateStats();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    
+    // Find matches
+    async function findMatches() {
+        try {
+            const response = await fetch(`${API_URL}/match`);
+            const data = await response.json();
+            
+            const container = document.getElementById('matchesContainer');
+            
+            if (data.matches.length === 0) {
+                container.innerHTML = '<div class="no-data">No matches found</div>';
+                return;
+            }
+            
+            let html = '';
+            data.matches.forEach(match => {
+                html += `
+                    <div class="match-card">
+                        <div class="match-header">
+                            <span style="font-weight: 600;">🔗 Potential Match</span>
+                            <span class="match-score">Score: ${match.match_score}</span>
+                        </div>
+                        <div class="match-items">
+                            <div class="match-item lost-item">
+                                <strong style="color: #ef4444;">Lost:</strong>
+                                <div style="margin-top: 0.5rem;">${match.lost_report.item_name}</div>
+                                <small>${match.lost_report.description}</small>
+                            </div>
+                            <div class="match-item found-item">
+                                <strong style="color: #10b981;">Found:</strong>
+                                <div style="margin-top: 0.5rem;">${match.found_report.item_name}</div>
+                                <small>${match.found_report.description}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    
+    // Load blockchain info
+    async function loadBlockchainInfo() {
+        try {
+            const response = await fetch(`${API_URL}/blockchain/chain`);
+            const data = await response.json();
+            
+            document.getElementById('blockCount').textContent = data.length;
+            document.getElementById('chainStatus').textContent = data.valid ? 'Valid ✓' : 'Invalid ✗';
+            document.getElementById('chainStatus').style.color = data.valid ? '#10b981' : '#ef4444';
+            
+            const latest = data.chain[data.chain.length - 1];
+            document.getElementById('latestBlock').textContent = latest?.hash?.slice(0, 6) + '...' || 'N/A';
+            
+            const infoDiv = document.getElementById('blockchainInfo');
+            infoDiv.innerHTML = `
+                <div style="margin-bottom: 0.5rem;">🔗 Chain Length: ${data.length} blocks</div>
+                <div style="margin-bottom: 0.5rem;">✅ Integrity: ${data.valid ? 'Verified' : 'Tampered'}</div>
+                <div>📦 Latest Block: ${latest?.hash?.slice(0, 20)}...</div>
+            `;
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    
+    // Toggle blockchain details
+    function toggleBlockchainDetails() {
+        const details = document.getElementById('blockchainDetails');
+        if (details.style.display === 'none') {
+            fetch(`${API_URL}/blockchain/chain`)
+                .then(res => res.json())
+                .then(data => {
+                    details.innerHTML = `<pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; overflow-x: auto;">${JSON.stringify(data.chain, null, 2)}</pre>`;
+                    details.style.display = 'block';
+                });
+        } else {
+            details.style.display = 'none';
+        }
+    }
+    
+    // Update stats
+    async function updateStats() {
+        try {
+            const response = await fetch(`${API_URL}/reports`);
+            const reports = await response.json();
+            
+            document.getElementById('totalReports').textContent = reports.length;
+            
+            const lostCount = reports.filter(r => r.type === 'lost').length;
+            const foundCount = reports.filter(r => r.type === 'found').length;
+            
+            const recoveryRate = reports.length > 0 ? 
+                Math.round((foundCount / (lostCount || 1)) * 100) : 0;
+            document.getElementById('recoveryRate').textContent = recoveryRate + '%';
+            
+            document.getElementById('totalMatches').textContent = 
+                Math.min(lostCount, foundCount);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    
+    // Notification helper
+    function showNotification(message, type) {
+        alert(message);
+    }
+    
+    // Load on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadReports();
+        loadBlockchainInfo();
+    });
+</script>
+{% endblock %}

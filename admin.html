@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+
+{% if not session.get('logged_in') %}
+    <script>window.location.href = '/login';</script>
+{% endif %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+    
+    .admin-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+        flex-wrap: wrap;
+    }
+    
+    .admin-tab {
+        padding: 0.8rem 1.5rem;
+        background: transparent;
+        border: none;
+        border-radius: 8px 8px 0 0;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-tab:hover {
+        color: var(--primary);
+        background: rgba(44, 62, 80, 0.05);
+    }
+    
+    .admin-tab.active {
+        color: var(--primary);
+        border-bottom: 3px solid var(--primary);
+        background: rgba(44, 62, 80, 0.05);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-bottom: 0.3rem;
+    }
+    
+    .stat-card p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .admin-panel {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+        min-height: 400px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        padding: 1rem;
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        font-weight: 500;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .status-pending { background: rgba(243, 156, 18, 0.1); color: #f39c12; }
+    .status-matched { background: rgba(39, 174, 96, 0.1); color: #27ae60; }
+    .status-resolved { background: rgba(41, 128, 185, 0.1); color: #2980b9; }
+    
+    .block-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .block-item {
+        background: var(--bg-primary);
+        border-radius: 8px;
+        padding: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .block-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .block-hash {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        word-break: break-all;
+    }
+    
+    .vehicle-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .vehicle-card {
+        background: var(--bg-primary);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .vehicle-card i {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .error-message {
+        background: rgba(192, 57, 43, 0.1);
+        color: #c0392b;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container fade-in">
+    <h1 style="margin-bottom: 2rem;">
+        <i class="fas fa-user-shield" style="color: var(--primary);"></i>
+        Admin Dashboard
+    </h1>
+    
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('overview', this)">
+            <i class="fas fa-chart-pie"></i> Overview
+        </button>
+        <button class="admin-tab" onclick="switchTab('reports', this)">
+            <i class="fas fa-list"></i> Reports
+        </button>
+        <button class="admin-tab" onclick="switchTab('vehicles', this)">
+            <i class="fas fa-bus"></i> Vehicles
+        </button>
+        <button class="admin-tab" onclick="switchTab('blockchain', this)">
+            <i class="fas fa-link"></i> Blockchain
+        </button>
+    </div>
+    
+    <!-- Stats (always visible) -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3 id="totalReports">0</h3>
+            <p>Total Reports</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="lostCount">0</h3>
+            <p>Lost Items</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="foundCount">0</h3>
+            <p>Found Items</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="matchedCount">0</h3>
+            <p>Matches</p>
+        </div>
+    </div>
+    
+    <!-- Dynamic Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <!-- Overview Tab -->
+        <div id="overviewTab">
+            <h2 style="margin-bottom: 1rem;">System Overview</h2>
+            <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="stat-card">
+                    <h3 id="blockLength">0</h3>
+                    <p>Blockchain Blocks</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="chainValid">-</h3>
+                    <p>Chain Status</p>
+                </div>
+            </div>
+            <h3 style="margin: 1.5rem 0 1rem;">Recent Blocks</h3>
+            <div class="block-list" id="recentBlocks">
+                <div class="loading">Loading blockchain...</div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="reportsTab" style="display: none;">
+            <h2 style="margin-bottom: 1rem;">All Reports</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr><td colspan="5" class="loading">Loading reports...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Vehicles Tab -->
+        <div id="vehiclesTab" style="display: none;">
+            <h2 style="margin-bottom: 1rem;">Active Vehicles</h2>
+            <div class="vehicle-grid" id="vehiclesGrid">
+                <div class="loading">Loading vehicles...</div>
+            </div>
+        </div>
+        
+        <!-- Blockchain Tab -->
+        <div id="blockchainTab" style="display: none;">
+            <h2 style="margin-bottom: 1rem;">Blockchain Explorer</h2>
+            <div class="block-list" id="allBlocks">
+                <div class="loading">Loading blockchain...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://127.0.0.1:5000/api';
+    
+    // Tab switching function
+    function switchTab(tabName, element) {
+        // Update tab buttons
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        element.classList.add('active');
+        
+        // Hide all tabs
+        document.getElementById('overviewTab').style.display = 'none';
+        document.getElementById('reportsTab').style.display = 'none';
+        document.getElementById('vehiclesTab').style.display = 'none';
+        document.getElementById('blockchainTab').style.display = 'none';
+        
+        // Show selected tab
+        document.getElementById(tabName + 'Tab').style.display = 'block';
+    }
+    
+    // Load all data
+    async function loadAdminData() {
+        try {
+            // Load reports
+            const reportsRes = await fetch(API_URL + '/reports');
+            const reports = await reportsRes.json();
+            
+            // Update stats
+            document.getElementById('totalReports').innerText = reports.length;
+            const lostCount = reports.filter(r => r.type === 'lost').length;
+            const foundCount = reports.filter(r => r.type === 'found').length;
+            const matchedCount = reports.filter(r => r.status === 'matched').length;
+            
+            document.getElementById('lostCount').innerText = lostCount;
+            document.getElementById('foundCount').innerText = foundCount;
+            document.getElementById('matchedCount').innerText = matchedCount;
+            
+            // Reports table
+            let reportsHtml = '';
+            reports.slice(0, 10).forEach(report => {
+                const statusClass = report.status === 'pending' ? 'status-pending' : 
+                                   report.status === 'matched' ? 'status-matched' : 'status-resolved';
+                
+                reportsHtml += '<tr>';
+                reportsHtml += '<td>#' + report.id + '</td>';
+                reportsHtml += '<td><strong>' + report.item_name + '</strong><br><small>' + (report.description || '').substring(0, 30) + '...</small></td>';
+                reportsHtml += '<td><span class="badge badge-' + (report.type === 'lost' ? 'danger' : 'success') + '">' + report.type.toUpperCase() + '</span></td>';
+                reportsHtml += '<td>' + (report.location || 'N/A') + '</td>';
+                reportsHtml += '<td><span class="status-badge ' + statusClass + '">' + report.status + '</span></td>';
+                reportsHtml += '</tr>';
+            });
+            
+            document.getElementById('reportsTableBody').innerHTML = reportsHtml || '<tr><td colspan="5" class="loading">No reports</td></tr>';
+            
+            // Load blockchain
+            const chainRes = await fetch(API_URL + '/blockchain/chain');
+            const chain = await chainRes.json();
+            
+            document.getElementById('blockLength').innerText = chain.length;
+            document.getElementById('chainValid').innerText = chain.valid ? 'Valid ✓' : 'Invalid ✗';
+            document.getElementById('chainValid').style.color = chain.valid ? '#27ae60' : '#c0392b';
+            
+            // Format blocks
+            let recentBlocksHtml = '';
+            let allBlocksHtml = '';
+            
+            chain.chain.slice(-5).reverse().forEach(block => {
+                const blockHtml = `
+                    <div class="block-item">
+                        <div class="block-header">
+                            <span>Block #${block.index}</span>
+                            <span>${(block.timestamp || '').substring(0, 19)}</span>
+                        </div>
+                        <div class="block-hash">${(block.hash || '').substring(0, 40)}...</div>
+                        ${block.data && block.data.item_name ? 
+                            '<div style="margin-top:0.5rem;"><i class="fas fa-cube"></i> ' + block.data.item_name + '</div>' : ''}
+                    </div>
+                `;
+                recentBlocksHtml += blockHtml;
+                allBlocksHtml += blockHtml;
+            });
+            
+            document.getElementById('recentBlocks').innerHTML = recentBlocksHtml || '<div>No blocks</div>';
+            document.getElementById('allBlocks').innerHTML = allBlocksHtml || '<div>No blocks</div>';
+            
+            // Load vehicles
+            const vehicles = ['BUS001', 'BUS002', 'TRAIN001', 'METRO001'];
+            let vehiclesHtml = '';
+            
+            for (let v of vehicles) {
+                try {
+                    const res = await fetch(API_URL + '/vehicle/' + v + '/qr');
+                    const data = await res.json();
+                    
+                    let icon = 'fa-bus';
+                    if (data.type === 'train') icon = 'fa-train';
+                    if (data.type === 'metro') icon = 'fa-subway';
+                    
+                    vehiclesHtml += `
+                        <div class="vehicle-card">
+                            <i class="fas ${icon}"></i>
+                            <h4>${data.vehicle_id}</h4>
+                            <p>${data.type} • ${data.route}</p>
+                        </div>
+                    `;
+                } catch (e) {
+                    console.log('Vehicle error:', e);
+                }
+            }
+            
+            document.getElementById('vehiclesGrid').innerHTML = vehiclesHtml || '<div class="loading">No vehicles</div>';
+            
+        } catch (error) {
+            console.error('Error:', error);
+            document.querySelectorAll('.loading').forEach(el => {
+                el.innerHTML = '<div class="error-message">Error loading data</div>';
+            });
+        }
+    }
+    
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', loadAdminData);
+</script>
+{% endblock %}
